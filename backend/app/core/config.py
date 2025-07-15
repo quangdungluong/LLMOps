@@ -11,7 +11,7 @@ class Settings(BaseSettings):
 
     # PostgreSQL Settings
     POSTGRESQL_SERVER: str = os.getenv("POSTGRESQL_SERVER", "localhost")
-    POSTGRESQL_PORT: int = int(os.getenv("POSTGRESQL_PORT", "5432"))
+    POSTGRESQL_PORT: int = int(os.getenv("POSTGRESQL_PORT", "54320"))
     POSTGRESQL_USER: str = os.getenv("POSTGRESQL_USER", "llmops")
     POSTGRESQL_PASSWORD: str = os.getenv("POSTGRESQL_PASSWORD", "llmops")
     POSTGRESQL_DATABASE: str = os.getenv("POSTGRESQL_DATABASE", "llmops")
@@ -30,6 +30,15 @@ class Settings(BaseSettings):
             return self.SQLALCHEMY_DATABASE_URI
         return (
             f"postgresql+asyncpg://{self.POSTGRESQL_USER}:{self.POSTGRESQL_PASSWORD}"
+            f"@{self.POSTGRESQL_SERVER}:{self.POSTGRESQL_PORT}/{self.POSTGRESQL_DATABASE}"
+        )
+
+    @property
+    def get_database_url_sync(self) -> str:
+        if self.SQLALCHEMY_DATABASE_URI:
+            return self.SQLALCHEMY_DATABASE_URI
+        return (
+            f"postgresql://{self.POSTGRESQL_USER}:{self.POSTGRESQL_PASSWORD}"
             f"@{self.POSTGRESQL_SERVER}:{self.POSTGRESQL_PORT}/{self.POSTGRESQL_DATABASE}"
         )
 

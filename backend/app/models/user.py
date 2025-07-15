@@ -1,5 +1,5 @@
-from sqlalchemy import Boolean, Column, Integer, String
 from app.models.base import Base, TimestampMixin
+from sqlalchemy import Boolean, Column, Integer, String
 
 
 class User(Base, TimestampMixin):
