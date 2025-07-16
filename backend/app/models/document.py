@@ -28,6 +28,7 @@ class Document(Base, TimestampMixin):
 
     # Relationships
     knowledge_base = relationship("KnowledgeBase", back_populates="documents")
+    processing_tasks = relationship("ProcessingTask", back_populates="document")
 
     __table_args__ = (
         UniqueConstraint(
@@ -58,3 +59,4 @@ class DocumentUpload(Base):
 
     # Relationships
     knowledge_base = relationship("KnowledgeBase", back_populates="document_uploads")
+    processing_tasks = relationship("ProcessingTask", back_populates="document_uploads")

@@ -19,3 +19,4 @@ class KnowledgeBase(Base, TimestampMixin):
     document_uploads = relationship(
         "DocumentUpload", back_populates="knowledge_base", cascade="all, delete-orphan"
     )
+    processing_tasks = relationship("ProcessingTask", back_populates="knowledge_base")

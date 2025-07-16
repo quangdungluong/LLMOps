@@ -25,6 +25,21 @@ class Settings(BaseSettings):
         os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "10080")
     )
 
+    # Embedding Settings
+    EMBEDDING_PROVIDER: str = os.getenv("EMBEDDING_PROVIDER", "ollama")
+
+    # Vector Store Settings
+    VECTOR_STORE_PROVIDER: str = os.getenv("VECTOR_STORE_PROVIDER", "milvus")
+
+    # Ollama Settings
+    OLLAMA_API_BASE: str = os.getenv("OLLAMA_API_BASE", "http://localhost:11434")
+    OLLAMA_EMBEDDINGS_MODEL: str = os.getenv(
+        "OLLAMA_EMBEDDINGS_MODEL", "nomic-embed-text"
+    )
+
+    # Milvus Settings
+    MILVUS_URI: str = os.getenv("MILVUS_URI", "http://localhost:19530")
+
     @property
     def get_database_url(self) -> str:
         if self.SQLALCHEMY_DATABASE_URI:

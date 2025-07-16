@@ -99,7 +99,7 @@ async def process_documents_route(
     knowledge_base_id: int,
     background_tasks: BackgroundTasks,
     upload_results: List[dict],
-    preview_request: PreviewRequest,
+    # preview_request: PreviewRequest,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
@@ -159,8 +159,8 @@ async def process_documents_route(
         add_processing_tasks_to_queue,
         task_data,
         knowledge_base_id,
-        preview_request.chunk_size,
-        preview_request.chunk_overlap,
+        1000,
+        200,
         db,
     )
 

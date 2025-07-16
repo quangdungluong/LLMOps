@@ -37,7 +37,11 @@ async def get_knowledge_base_by_user_id(
 ) -> Sequence[KnowledgeBase]:
     result = await db.execute(
         select(KnowledgeBase)
-        .options(selectinload(KnowledgeBase.documents))
+        .options(
+            selectinload(KnowledgeBase.documents).selectinload(
+                Document.processing_tasks
+            )
+        )
         .filter(KnowledgeBase.user_id == user_id)
         .offset(skip)
         .limit(limit)
@@ -50,7 +54,11 @@ async def get_knowledge_base_by_id(
 ) -> KnowledgeBase:
     result = await db.execute(
         select(KnowledgeBase)
-        .options(selectinload(KnowledgeBase.documents))
+        .options(
+            selectinload(KnowledgeBase.documents).selectinload(
+                Document.processing_tasks
+            )
+        )
         .filter(
             KnowledgeBase.id == knowledge_base_id,
             KnowledgeBase.user_id == user_id,
