@@ -22,4 +22,4 @@ class ProcessingTask(Base):
     # Relationships
     document = relationship("Document", back_populates="processing_tasks")
     knowledge_base = relationship("KnowledgeBase", back_populates="processing_tasks")
-    document_upload = relationship("DocumentUpload", back_populates="processing_tasks")
+    document_uploads = relationship("DocumentUpload", back_populates="processing_tasks")
