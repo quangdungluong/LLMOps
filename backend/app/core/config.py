@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     PROJECT_NAME: str = "LLMOps"
     VERSION: str = "0.0.1"
     API_V1_STR: str = "/api/v1"
+    MEDIA_ROOT: str = os.getenv("MEDIA_ROOT", "media")
 
     # PostgreSQL Settings
     POSTGRESQL_SERVER: str = os.getenv("POSTGRESQL_SERVER", "localhost")

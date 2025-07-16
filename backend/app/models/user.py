@@ -1,5 +1,6 @@
 from app.models.base import Base, TimestampMixin
 from sqlalchemy import Boolean, Column, Integer, String
+from sqlalchemy.orm import relationship
 
 
 class User(Base, TimestampMixin):
@@ -11,3 +12,6 @@ class User(Base, TimestampMixin):
     hashed_password = Column(String(255), nullable=False)
     is_active = Column(Boolean, default=True)
     is_superuser = Column(Boolean, default=False)
+
+    # Relationships
+    knowledge_bases = relationship("KnowledgeBase", back_populates="user")
