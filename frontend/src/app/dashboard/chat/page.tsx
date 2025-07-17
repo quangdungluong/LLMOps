@@ -15,6 +15,16 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 interface Chat {
   id: number;
@@ -34,6 +44,7 @@ interface Message {
 export default function ChatPage() {
   const [chats, setChats] = useState<Chat[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [chatToDelete, setChatToDelete] = useState<Chat | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -57,7 +68,6 @@ export default function ChatPage() {
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm('Are you sure you want to delete this chat?')) return;
     try {
       await api.delete(`/api/chat/${id}`);
       setChats((prev) => prev.filter((chat) => chat.id !== id));
@@ -143,8 +153,8 @@ export default function ChatPage() {
                         '__LLM_RESPONSE__'
                       )
                         ? chat.messages[chat.messages.length - 1].content.split(
-                            '__LLM_RESPONSE__'
-                          )[1]
+                          '__LLM_RESPONSE__'
+                        )[1]
                         : chat.messages[chat.messages.length - 1].content}
                     </p>
                   </CardContent>
@@ -155,7 +165,7 @@ export default function ChatPage() {
                 size='icon'
                 onClick={(e) => {
                   e.preventDefault();
-                  handleDelete(chat.id);
+                  setChatToDelete(chat);
                 }}
                 className='absolute top-4 right-4 h-8 w-8 rounded-full group/delete'
               >
@@ -185,6 +195,33 @@ export default function ChatPage() {
           </Card>
         )}
       </div>
+      <AlertDialog
+        open={!!chatToDelete}
+        onOpenChange={(isOpen) => !isOpen && setChatToDelete(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete this
+              chat.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (chatToDelete) {
+                  handleDelete(chatToDelete.id);
+                  setChatToDelete(null);
+                }
+              }}
+            >
+              Continue
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </DashboardLayout>
   );
 }

@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 from pydantic import BaseModel
 
 
@@ -36,3 +36,11 @@ class ChatResponse(ChatBase):
 
     class Config:
         from_attributes = True
+
+
+class ChatCreate(ChatBase):
+    knowledge_base_ids: List[int]
+
+
+class ChatUpdate(ChatBase):
+    knowledge_base_ids: Optional[List[int]] = None

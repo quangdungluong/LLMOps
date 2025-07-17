@@ -68,6 +68,24 @@ async def get_knowledge_base_by_id(
     return kb
 
 
+async def get_knowledge_base_by_ids(
+    db: AsyncSession, knowledge_base_ids: List[int], user_id: int
+) -> Sequence[KnowledgeBase]:
+    result = await db.execute(
+        select(KnowledgeBase)
+        .options(
+            selectinload(KnowledgeBase.documents).selectinload(
+                Document.processing_tasks
+            )
+        )
+        .filter(
+            KnowledgeBase.id.in_(knowledge_base_ids),
+            KnowledgeBase.user_id == user_id,
+        )
+    )
+    return result.scalars().all()
+
+
 async def get_document_by_id(
     db: AsyncSession, document_id: int, knowledge_base_id: int, user_id: int
 ) -> Optional[Document]:
