@@ -21,7 +21,7 @@ class ProcessingTask(ProcessingTaskBase):
 
 
 class TaskStatus(BaseModel):
-    document_id: int
+    document_id: Optional[int] = None
     status: str
     error_message: Optional[str] = None
     upload_id: Optional[int] = None

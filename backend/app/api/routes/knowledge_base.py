@@ -192,7 +192,6 @@ async def process_documents_route(
         knowledge_base_id,
         1000,
         200,
-        db,
     )
 
     return {"tasks": task_info}
@@ -221,7 +220,6 @@ async def add_processing_tasks_to_queue(
     knowledge_base_id: int,
     chunk_size: int,
     chunk_overlap: int,
-    db: AsyncSession,
 ):
     for data in task_data:
         asyncio.create_task(
@@ -232,7 +230,6 @@ async def add_processing_tasks_to_queue(
                 data["task_id"],
                 chunk_size,
                 chunk_overlap,
-                db,
             )
         )
 
