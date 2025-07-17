@@ -14,6 +14,14 @@ const nextConfig = {
         source: '/api/users/register',
         destination: `${NEXT_PUBLIC_SERVER_BASE_URL}/api/v1/users/register`,
       },
+      {
+        source: '/api/knowledge-base/:path*',
+        destination: `${NEXT_PUBLIC_SERVER_BASE_URL}/api/v1/knowledge-base/:path*`,
+      },
+      {
+        source: '/api/chat/:path*',
+        destination: `${NEXT_PUBLIC_SERVER_BASE_URL}/api/v1/chat/:path*`,
+      },
     ];
   },
 };
