@@ -36,6 +36,8 @@ from fastapi import (
     UploadFile,
 )
 from sqlalchemy.ext.asyncio import AsyncSession
+from app.schemas.retrieval import TestRetrievalRequest
+from app.services.retrieval import retrieve_documents
 
 router = APIRouter(prefix="/knowledge-base", tags=["knowledge-base"])
 
@@ -261,3 +263,33 @@ async def get_processing_tasks(
         for task in tasks
     }
     return TaskStatusResponse.model_validate(response_data)
+
+
+@router.post("/test-retrieval")
+async def test_retrieval(
+    test_retrieval_request: TestRetrievalRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    knowledge_base = await get_knowledge_base_by_id(
+        db, test_retrieval_request.kb_id, current_user.id
+    )
+    if not knowledge_base:
+        raise HTTPException(status_code=404, detail="Knowledge base not found")
+
+    results = retrieve_documents(
+        test_retrieval_request.query,
+        knowledge_base.id,
+        test_retrieval_request.top_k,
+    )
+    print(results)
+    response = []
+    for doc, score in results:
+        response.append(
+            {
+                "document": doc.page_content,
+                "metadata": doc.metadata,
+                "score": float(score),
+            }
+        )
+    return {"results": response}
