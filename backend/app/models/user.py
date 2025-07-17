@@ -15,3 +15,4 @@ class User(Base, TimestampMixin):
 
     # Relationships
     knowledge_bases = relationship("KnowledgeBase", back_populates="user")
+    chats = relationship("Chat", back_populates="user")
