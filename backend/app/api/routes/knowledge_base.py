@@ -164,7 +164,7 @@ async def process_documents_route(
         db,
     )
 
-    return {"message": "Documents processing started"}
+    return {"tasks": task_info}
 
 
 @router.post("/{knowledge_base_id}/documents/preview")

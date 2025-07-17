@@ -1,5 +1,6 @@
 import hashlib
 import os
+import re
 import traceback
 
 from app.core.config import settings
@@ -9,8 +10,21 @@ from app.schemas.knowledge import PreviewResponse, TextChunk
 from app.services.embeddings.embedding_factory import EmbeddingFactory
 from app.services.vector_store.factory import VectorStoreFactory
 from langchain_community.document_loaders import PyPDFLoader
+from langchain_core.documents import Document as LangchainDocument
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from sqlalchemy.ext.asyncio import AsyncSession
+
+MILVUS_FIELD_NAME_PATTERN = re.compile(r"[^a-zA-Z0-9_]")
+
+
+def sanitize_metadata_field_name(name: str) -> str:
+    return MILVUS_FIELD_NAME_PATTERN.sub("_", name)
+
+
+def sanitize_metadata(doc: LangchainDocument):
+    sanitized = {sanitize_metadata_field_name(k): v for k, v in doc.metadata.items()}
+    doc.metadata = sanitized
+    return doc
 
 
 async def preview_document(
@@ -101,6 +115,7 @@ async def process_document_background(
             chunk.metadata["chunk_id"] = chunk_id
 
         # Add chunk to vectorstore
+        chunks = [sanitize_metadata(chunk) for chunk in chunks]
         vector_store.add_documents(chunks)
         task.status = "completed"
         task.document_id = document.id
@@ -110,6 +125,7 @@ async def process_document_background(
             upload.status = "completed"
 
         await db.commit()
+        print(f"Task: {task_id}: Document processed")
     except Exception as e:
         traceback.print_exc()
         print(f"Error previewing document {file_name}: {e}")
