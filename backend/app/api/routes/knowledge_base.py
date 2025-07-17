@@ -282,7 +282,6 @@ async def test_retrieval(
         knowledge_base.id,
         test_retrieval_request.top_k,
     )
-    print(results)
     response = []
     for doc, score in results:
         response.append(

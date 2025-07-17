@@ -177,7 +177,7 @@ export default function TestPage({ params }: { params: { id: string } }) {
                   </CardHeader>
                   <CardContent className='p-4'>
                     <p className='text-base leading-relaxed whitespace-pre-wrap'>
-                      {result.content}
+                      {result.document}
                     </p>
                   </CardContent>
                 </Card>
