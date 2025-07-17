@@ -11,6 +11,7 @@ from .base import BaseVectorStore
 
 class MilvusVectorStore(BaseVectorStore):
     def __init__(self, collection_name: str, embedding_function: Embeddings, **kwargs):
+        self.collection_name = collection_name
         self._store = Milvus(
             embedding_function=embedding_function,
             connection_args={
@@ -25,6 +26,16 @@ class MilvusVectorStore(BaseVectorStore):
 
     def delete(self, ids: List[str]) -> None:
         self._store.delete(ids)
+
+    def delete_by_document_id(self, document_id: int) -> None:
+        results = self._store._milvus_client.query(
+            collection_name=self.collection_name,
+            filter=f"document_id == {document_id}",
+            output_fields=["pk"],
+        )
+        if results:
+            ids_to_delete = [res["pk"] for res in results]
+            self.delete(ids_to_delete)
 
     def as_retriever(self, **kwargs: Any) -> BaseRetriever:
         return self._store.as_retriever(**kwargs)

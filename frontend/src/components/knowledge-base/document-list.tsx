@@ -2,6 +2,18 @@
 
 import { useEffect, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { formatDistanceToNow } from 'date-fns';
 import { api, ApiError } from '@/lib/api';
 import { FileIcon, defaultStyles } from 'react-file-icon';
@@ -13,8 +25,9 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { FileText } from 'lucide-react';
+import { FileText, Trash2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useToast } from '@/components/ui/use-toast';
 
 interface Document {
   id: number;
@@ -45,25 +58,49 @@ export function DocumentList({ knowledgeBaseId }: DocumentListProps) {
   const [documents, setDocuments] = useState<Document[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
+
+  const fetchDocuments = async () => {
+    try {
+      setLoading(true);
+      const data = await api.get(`/api/knowledge-base/${knowledgeBaseId}`);
+      setDocuments(data.documents);
+    } catch (error) {
+      if (error instanceof ApiError) {
+        setError(error.message);
+      } else {
+        setError('Failed to fetch documents');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchDocuments = async () => {
-      try {
-        const data = await api.get(`/api/knowledge-base/${knowledgeBaseId}`);
-        setDocuments(data.documents);
-      } catch (error) {
-        if (error instanceof ApiError) {
-          setError(error.message);
-        } else {
-          setError('Failed to fetch documents');
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchDocuments();
   }, [knowledgeBaseId]);
+
+  const handleDelete = async (documentId: number) => {
+    try {
+      await api.delete(
+        `/api/knowledge-base/${knowledgeBaseId}/documents/${documentId}`
+      );
+      setDocuments((prev) => prev.filter((doc) => doc.id !== documentId));
+      toast({
+        title: 'Success',
+        description: 'Document deleted successfully',
+      });
+    } catch (error) {
+      console.error('Failed to delete document:', error);
+      if (error instanceof ApiError) {
+        toast({
+          title: 'Error',
+          description: error.message,
+          variant: 'destructive',
+        });
+      }
+    }
+  };
 
   if (loading) {
     return (
@@ -114,6 +151,7 @@ export function DocumentList({ knowledgeBaseId }: DocumentListProps) {
           <TableHead>Size</TableHead>
           <TableHead>Created</TableHead>
           <TableHead>Status</TableHead>
+          <TableHead className='text-right'>Actions</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -154,13 +192,37 @@ export function DocumentList({ knowledgeBaseId }: DocumentListProps) {
                     doc.processing_tasks[0].status === 'completed'
                       ? 'secondary' // Green for completed
                       : doc.processing_tasks[0].status === 'failed'
-                      ? 'destructive' // Red for failed
-                      : 'default' // Default for pending/processing
+                        ? 'destructive' // Red for failed
+                        : 'default' // Default for pending/processing
                   }
                 >
                   {doc.processing_tasks[0].status}
                 </Badge>
               )}
+            </TableCell>
+            <TableCell className='text-right'>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant='ghost' size='icon'>
+                    <Trash2 className='h-4 w-4' />
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This action cannot be undone. This will permanently delete
+                      the document and its embeddings.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => handleDelete(doc.id)}>
+                      Continue
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </TableCell>
           </TableRow>
         ))}

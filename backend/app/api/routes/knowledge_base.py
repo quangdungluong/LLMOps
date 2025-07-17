@@ -3,9 +3,14 @@ import hashlib
 from typing import List
 
 from app.api.deps import get_current_user
-from app.crud.document import get_upload_by_ids, upload_documents
+from app.crud.document import (
+    delete_document,
+    get_upload_by_ids,
+    upload_documents,
+)
 from app.crud.knowledge import (
     create_knowledge_base,
+    get_document_by_id,
     get_knowledge_base_by_id,
     get_knowledge_base_by_user_id,
     preview_documents,
@@ -87,6 +92,22 @@ async def delete_knowledge_base(
     db: AsyncSession = Depends(get_db),
 ) -> KnowledgeBaseResponse:
     pass
+
+
+@router.delete("/{knowledge_base_id}/documents/{document_id}")
+async def delete_document_route(
+    knowledge_base_id: int,
+    document_id: int,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    document = await get_document_by_id(
+        db, document_id, knowledge_base_id, current_user.id
+    )
+    if not document:
+        raise HTTPException(status_code=404, detail="Document not found")
+    await delete_document(db, document)
+    return {"status": "success"}
 
 
 @router.post("/{knowledge_base_id}/documents/upload")

@@ -5,10 +5,14 @@ from typing import List, Sequence
 from app.core.config import settings
 from app.models.document import Document, DocumentUpload
 from app.models.knowledge import KnowledgeBase
+from app.models.task import ProcessingTask
 from app.schemas.knowledge import KnowledgeBaseCreate
+from app.services.vector_store.factory import VectorStoreFactory
 from fastapi import UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from sqlalchemy import delete
+from app.services.embeddings.embedding_factory import EmbeddingFactory
 
 
 async def upload_documents(
@@ -78,3 +82,37 @@ async def get_upload_by_ids(db: AsyncSession, upload_ids: List[int]):
         select(DocumentUpload).filter(DocumentUpload.id.in_(upload_ids))
     )
     return result.scalars().all()
+
+
+async def delete_document(db: AsyncSession, document: Document):
+    # Delete from vector store
+    vector_store = VectorStoreFactory.create(
+        store_type=settings.VECTOR_STORE_PROVIDER,
+        collection_name=f"knowledge_base_{document.knowledge_base_id}",
+        embedding_function=EmbeddingFactory.create(),
+    )
+    if hasattr(vector_store, "delete_by_document_id"):
+        vector_store.delete_by_document_id(document.id)
+
+    # Find and delete associated tasks and uploads
+    result = await db.execute(
+        select(ProcessingTask).filter(ProcessingTask.document_id == document.id)
+    )
+    tasks = result.scalars().all()
+    upload_ids = [task.document_upload_id for task in tasks if task.document_upload_id]
+
+    for task in tasks:
+        await db.delete(task)
+
+    if upload_ids:
+        await db.execute(
+            delete(DocumentUpload).where(DocumentUpload.id.in_(upload_ids))
+        )
+
+    # Delete file from storage
+    if document.file_path and os.path.exists(document.file_path):
+        os.remove(document.file_path)
+
+    # Delete from db
+    await db.delete(document)
+    await db.commit()
