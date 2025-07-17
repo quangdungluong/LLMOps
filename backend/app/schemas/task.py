@@ -1,7 +1,7 @@
 from datetime import datetime
-from typing import Optional
+from typing import Dict, Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, RootModel
 
 
 class ProcessingTaskBase(BaseModel):
@@ -18,3 +18,15 @@ class ProcessingTask(ProcessingTaskBase):
 
     class Config:
         from_attributes = True
+
+
+class TaskStatus(BaseModel):
+    document_id: int
+    status: str
+    error_message: Optional[str] = None
+    upload_id: Optional[int] = None
+    file_name: Optional[str] = None
+
+
+class TaskStatusResponse(RootModel[Dict[int, TaskStatus]]):
+    pass

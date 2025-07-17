@@ -17,6 +17,7 @@ class MilvusVectorStore(BaseVectorStore):
                 "uri": settings.MILVUS_URI,
             },
             collection_name=collection_name,
+            enable_dynamic_field=True,
         )
 
     def add_documents(self, documents: List[Document]) -> None:

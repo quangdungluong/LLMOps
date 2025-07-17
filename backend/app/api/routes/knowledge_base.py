@@ -10,6 +10,7 @@ from app.crud.knowledge import (
     get_knowledge_base_by_user_id,
     preview_documents,
 )
+from app.crud.task import get_processing_tasks_by_ids
 from app.db.session import get_db
 from app.models.task import ProcessingTask
 from app.models.user import User
@@ -18,8 +19,17 @@ from app.schemas.knowledge import (
     KnowledgeBaseResponse,
     PreviewRequest,
 )
+from app.schemas.task import TaskStatus, TaskStatusResponse
 from app.services.document_processor import process_document_background
-from fastapi import APIRouter, BackgroundTasks, Depends, File, HTTPException, UploadFile
+from fastapi import (
+    APIRouter,
+    BackgroundTasks,
+    Depends,
+    File,
+    HTTPException,
+    Query,
+    UploadFile,
+)
 from sqlalchemy.ext.asyncio import AsyncSession
 
 router = APIRouter(prefix="/knowledge-base", tags=["knowledge-base"])
@@ -204,3 +214,32 @@ async def add_processing_tasks_to_queue(
                 db,
             )
         )
+
+
+@router.get("/{knowledge_base_id}/documents/tasks")
+async def get_processing_tasks(
+    knowledge_base_id: int,
+    current_user: User = Depends(get_current_user),
+    task_ids: str = Query(..., description="Comma separated list of task IDs"),
+    db: AsyncSession = Depends(get_db),
+):
+    task_ids_list = list(map(int, task_ids.split(",")))
+    knowledge_base = await get_knowledge_base_by_id(
+        db, knowledge_base_id, current_user.id
+    )
+    if not knowledge_base:
+        raise HTTPException(status_code=404, detail="Knowledge base not found")
+    tasks = await get_processing_tasks_by_ids(db, task_ids_list, knowledge_base_id)
+    response_data = {
+        task.id: TaskStatus(
+            document_id=task.document_id,
+            status=task.status,
+            error_message=task.error_message,
+            upload_id=task.document_upload_id,
+            file_name=(
+                task.document_uploads.file_name if task.document_uploads else None
+            ),
+        )
+        for task in tasks
+    }
+    return TaskStatusResponse.model_validate(response_data)
