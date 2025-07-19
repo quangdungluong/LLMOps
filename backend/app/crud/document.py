@@ -7,12 +7,12 @@ from app.models.document import Document, DocumentUpload
 from app.models.knowledge import KnowledgeBase
 from app.models.task import ProcessingTask
 from app.schemas.knowledge import KnowledgeBaseCreate
+from app.services.embeddings.embedding_factory import EmbeddingFactory
 from app.services.vector_store.factory import VectorStoreFactory
 from fastapi import UploadFile
+from sqlalchemy import delete
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from sqlalchemy import delete
-from app.services.embeddings.embedding_factory import EmbeddingFactory
 
 
 async def upload_documents(
@@ -116,3 +116,10 @@ async def delete_document(db: AsyncSession, document: Document):
     # Delete from db
     await db.delete(document)
     await db.commit()
+
+
+async def get_documents_by_knowledge_base_id(db: AsyncSession, knowledge_base_id: int):
+    result = await db.execute(
+        select(Document).filter(Document.knowledge_base_id == knowledge_base_id)
+    )
+    return result.scalars().all()

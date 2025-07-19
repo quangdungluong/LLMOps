@@ -25,6 +25,9 @@ class Settings(BaseSettings):
         os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "10080")
     )
 
+    # Chat Provider Settings
+    CHAT_PROVIDER: str = os.getenv("CHAT_PROVIDER", "gemini")
+
     # Embedding Settings
     EMBEDDING_PROVIDER: str = os.getenv("EMBEDDING_PROVIDER", "ollama")
 
@@ -39,6 +42,10 @@ class Settings(BaseSettings):
 
     # Milvus Settings
     MILVUS_URI: str = os.getenv("MILVUS_URI", "http://localhost:19530")
+
+    # Gemini Settings
+    GOOGLE_API_KEY: str = os.getenv("GOOGLE_API_KEY", "")
+    GOOGLE_GENAI_MODEL: str = os.getenv("GOOGLE_GENAI_MODEL", "gemini-2.0-flash")
 
     @property
     def get_database_url(self) -> str:

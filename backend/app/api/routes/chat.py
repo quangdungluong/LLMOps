@@ -1,12 +1,13 @@
-from fastapi import APIRouter, Depends
 from app.api.deps import get_current_user
-from app.schemas.chat import ChatResponse, ChatCreate
+from app.crud.chat import create_chat, delete_chat, get_chat_by_id, get_chats_by_user_id
+from app.crud.knowledge import get_knowledge_base_by_ids_and_user_id
 from app.db.session import get_db
-from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.user import User
-from app.crud.chat import get_chats_by_user_id, create_chat, delete_chat, get_chat_by_id
-from app.crud.knowledge import get_knowledge_base_by_ids
-from fastapi import HTTPException
+from app.schemas.chat import ChatCreate, ChatResponse
+from app.services.chat_service import generate_response
+from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import StreamingResponse
+from sqlalchemy.ext.asyncio import AsyncSession
 
 router = APIRouter(prefix="/chat", tags=["chat"])
 
@@ -29,7 +30,9 @@ async def create_chat_route(
     user: User = Depends(get_current_user),
 ):
     knowledge_base_ids = chat.knowledge_base_ids
-    knowledge_base = await get_knowledge_base_by_ids(db, knowledge_base_ids, user.id)
+    knowledge_base = await get_knowledge_base_by_ids_and_user_id(
+        db, knowledge_base_ids, user.id
+    )
     if len(knowledge_base) != len(knowledge_base_ids):
         raise HTTPException(
             status_code=404, detail="One or more knowledge base not found"
@@ -63,3 +66,35 @@ async def get_chat(
     if not chat:
         raise HTTPException(status_code=404, detail="Chat not found")
     return ChatResponse.model_validate(chat)
+
+
+@router.post("/{chat_id}/messages")
+async def create_message(
+    chat_id: int,
+    messages: dict,
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    chat = await get_chat_by_id(db, chat_id, user.id)
+    if not chat:
+        raise HTTPException(status_code=404, detail="Chat not found")
+
+    # Get the last user message
+    last_user_message = messages["messages"][-1]
+    if last_user_message["role"] != "user":
+        raise HTTPException(status_code=400, detail="Last message must be from user")
+
+    # Get knowledge base ids of the chat
+    knowledge_base_ids = [kb.id for kb in chat.knowledge_bases]
+
+    async def response_stream():
+        async for chunk in generate_response(
+            query=last_user_message["content"],
+            messages=messages,
+            knowledge_base_ids=knowledge_base_ids,
+            chat_id=chat_id,
+            db=db,
+        ):
+            yield chunk
+
+    return StreamingResponse(response_stream(), media_type="text/event-stream")
