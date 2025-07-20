@@ -89,6 +89,7 @@ async def create_message(
 
     async def response_stream():
         async for chunk in generate_response(
+            user_id=user.id,
             query=last_user_message["content"],
             messages=messages,
             knowledge_base_ids=knowledge_base_ids,
