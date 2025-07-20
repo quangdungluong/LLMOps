@@ -7,6 +7,7 @@ from app.crud.document import get_documents_by_knowledge_base_id
 from app.crud.knowledge import get_knowledge_base_by_ids
 from app.models.chat import Message
 from app.services.embeddings.embedding_factory import EmbeddingFactory
+from app.services.langfuse_tracing import langfuse_handler
 from app.services.llm.factory import LLMFactory
 from app.services.vector_store.factory import VectorStoreFactory
 from langchain.chains.combine_documents import create_stuff_documents_chain
@@ -22,6 +23,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 
 async def generate_response(
+    user_id: int,
     query: str,
     messages: dict,
     knowledge_base_ids: list[int],
@@ -150,7 +152,11 @@ async def generate_response(
 
         response = ""
         async for chunk in rag_chain.astream(
-            {"input": query, "chat_history": chat_history}
+            {"input": query, "chat_history": chat_history},
+            config={
+                "callbacks": [langfuse_handler],
+                "metadata": {"langfuse_user_id": user_id},
+            },
         ):
             if "context" in chunk:
                 serializable_context = []
