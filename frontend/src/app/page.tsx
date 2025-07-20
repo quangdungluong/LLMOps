@@ -78,7 +78,7 @@ export default function Home() {
   );
 }
 
-function FeatureCard({ icon, title, description }) {
+function FeatureCard({ icon, title, description }: { icon: string; title: string; description: string }) {
   const icons = {
     rocket: (
       <svg className="h-10 w-10 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -100,7 +100,7 @@ function FeatureCard({ icon, title, description }) {
   return (
     <div className="text-center">
       <div className="h-20 w-20 mx-auto rounded-full bg-blue-100 flex items-center justify-center mb-6">
-        {icons[icon]}
+        {icons[icon as keyof typeof icons]}
       </div>
       <h3 className="text-2xl font-semibold text-black mb-4">{title}</h3>
       <p className="text-gray-500 leading-relaxed">{description}</p>

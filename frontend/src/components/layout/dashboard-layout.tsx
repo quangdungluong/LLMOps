@@ -50,9 +50,8 @@ export default function DashboardLayout({
 
       {/* Sidebar */}
       <div
-        className={`fixed inset-y-0 left-0 z-40 w-64 transform bg-card border-r transition-transform duration-200 ease-in-out lg:translate-x-0 ${
-          isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
-        }`}
+        className={`fixed inset-y-0 left-0 z-40 w-64 transform bg-card border-r transition-transform duration-200 ease-in-out lg:translate-x-0 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
+          }`}
       >
         <Card className='flex h-full flex-col rounded-none border-none shadow-none'>
           {/* Sidebar header */}
@@ -66,7 +65,7 @@ export default function DashboardLayout({
                 alt='Logo'
                 className='w-16 h-16 rounded-lg'
               />
-              RAG Web UI
+              Chatbot
             </Link>
           </Card>
           <Divider />
@@ -79,18 +78,16 @@ export default function DashboardLayout({
                 <Link
                   key={item.name}
                   href={item.href}
-                  className={`group flex items-center rounded-lg px-4 py-3 text-sm font-medium transition-all duration-200 ${
-                    isActive
+                  className={`group flex items-center rounded-lg px-4 py-3 text-sm font-medium transition-all duration-200 ${isActive
                       ? 'bg-gradient-to-r from-primary/10 to-primary/5 text-primary shadow-sm'
                       : 'text-muted-foreground hover:bg-accent/50 hover:text-foreground hover:shadow-sm'
-                  }`}
+                    }`}
                 >
                   <item.icon
-                    className={`mr-3 h-5 w-5 transition-transform duration-200 ${
-                      isActive
+                    className={`mr-3 h-5 w-5 transition-transform duration-200 ${isActive
                         ? 'text-primary scale-110'
                         : 'group-hover:scale-110'
-                    }`}
+                      }`}
                   />
                   <span className='font-medium'>{item.name}</span>
                   {isActive && (
