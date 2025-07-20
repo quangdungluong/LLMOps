@@ -4,6 +4,7 @@ const NEXT_PUBLIC_SERVER_BASE_URL =
 
 const nextConfig = {
   reactStrictMode: false,
+  output: 'standalone',
   rewrites: async () => {
     return [
       {

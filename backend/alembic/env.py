@@ -3,6 +3,10 @@ from logging.config import fileConfig
 from alembic import context
 from app.core.config import settings
 from app.models.base import Base
+from app.models.chat import Chat, Message
+from app.models.document import Document, DocumentUpload
+from app.models.knowledge import KnowledgeBase
+from app.models.task import ProcessingTask
 from app.models.user import User
 from sqlalchemy import engine_from_config, pool
 

@@ -1,0 +1,133 @@
+services:
+  backend:
+    image: llmops-backend
+    container_name: llmops-backend
+    build: ./backend
+    env_file:
+      - .env
+    volumes:
+      - ./backend:/app
+    networks:
+      - llmops-network
+    depends_on:
+      db:
+        condition: service_healthy
+      minio:
+        condition: service_started
+    restart: always
+    command: ['bash', './entrypoint.sh']
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+
+  frontend:
+    image: llmops-frontend
+    container_name: llmops-frontend
+    build: ./frontend
+    restart: always
+    volumes:
+      - ./frontend:/app
+    networks:
+      - llmops-network
+
+  db:
+    image: postgres:latest
+    environment:
+      - POSTGRES_USER=llmops
+      - POSTGRES_PASSWORD=llmops
+      - POSTGRES_DB=llmops
+    restart: always
+    ports:
+      - '54320:5432'
+    volumes:
+      - ./volumes/postgres_data:/var/lib/postgresql/data
+    networks:
+      - llmops-network
+    healthcheck:
+      test: ['CMD', 'pg_isready', '-U', 'llmops']
+      interval: 30s
+      timeout: 20s
+      retries: 3
+
+  minio:
+    image: minio/minio:latest
+    restart: always
+    ports:
+      - '9000:9000' # API port
+      - '9001:9001' # Console port
+    environment:
+      - MINIO_ROOT_USER=minioadmin
+      - MINIO_ROOT_PASSWORD=minioadmin
+    volumes:
+      - ./volumes/minio_data:/data
+    command: server --console-address ":9001" /data
+    networks:
+      - llmops-network
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - '80:80'
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - frontend
+      - backend
+      - minio
+    networks:
+      - llmops-network
+  
+  etcd:
+    container_name: milvus-etcd
+    image: quay.io/coreos/etcd:v3.5.18
+    environment:
+      - ETCD_AUTO_COMPACTION_MODE=revision
+      - ETCD_AUTO_COMPACTION_RETENTION=1000
+      - ETCD_QUOTA_BACKEND_BYTES=4294967296
+      - ETCD_SNAPSHOT_COUNT=50000
+    volumes:
+      - ./volumes/etcd:/etcd
+    command: etcd -advertise-client-urls=http://etcd:2379 -listen-client-urls http://0.0.0.0:2379 --data-dir /etcd
+    healthcheck:
+      test: ['CMD', 'etcdctl', 'endpoint', 'health']
+      interval: 30s
+      timeout: 20s
+      retries: 3
+    networks:
+      - llmops-network
+
+  standalone:
+    container_name: milvus-standalone
+    image: milvusdb/milvus:v2.5.14
+    command: ['milvus', 'run', 'standalone']
+    security_opt:
+      - seccomp:unconfined
+    environment:
+      MINIO_REGION: us-east-1
+      ETCD_ENDPOINTS: etcd:2379
+      MINIO_ADDRESS: minio:9000
+    volumes:
+      - ./volumes/milvus:/var/lib/milvus
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:9091/healthz']
+      interval: 30s
+      start_period: 90s
+      timeout: 20s
+      retries: 3
+    ports:
+      - '19530:19530'
+      - '9091:9091'
+    depends_on:
+      - 'etcd'
+      - 'minio'
+    networks:
+      - llmops-network
+
+
+networks:
+  llmops-network:
+    driver: bridge
