@@ -1,5 +1,4 @@
 import hashlib
-import os
 import re
 import traceback
 
@@ -9,11 +8,10 @@ from app.db.session import AsyncSessionLocal
 from app.models.document import Document
 from app.schemas.knowledge import PreviewResponse, TextChunk
 from app.services.embeddings.embedding_factory import EmbeddingFactory
+from app.services.loaders.factory import DocumentLoaderFactory
 from app.services.vector_store.factory import VectorStoreFactory
-from langchain_community.document_loaders import PyPDFLoader
 from langchain_core.documents import Document as LangchainDocument
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from sqlalchemy.ext.asyncio import AsyncSession
 
 MILVUS_FIELD_NAME_PATTERN = re.compile(r"[^a-zA-Z0-9_]")
 
@@ -31,11 +29,7 @@ def sanitize_metadata(doc: LangchainDocument):
 async def preview_document(
     file_path: str, chunk_size: int, chunk_overlap: int
 ) -> PreviewResponse:
-    _, ext = os.path.splitext(file_path)
-    ext = ext.lower()
-
-    if ext == ".pdf":
-        loader = PyPDFLoader(file_path)
+    loader = DocumentLoaderFactory.create(file_path)
 
     documents = loader.load()
     text_splitter = RecursiveCharacterTextSplitter(
@@ -71,11 +65,7 @@ async def process_document_background(
             task.status = "processing"
             await db.commit()
 
-            _, ext = os.path.splitext(file_name)
-            ext = ext.lower()
-
-            if ext == ".pdf":
-                loader = PyPDFLoader(temp_path)
+            loader = DocumentLoaderFactory.create(temp_path)
 
             documents = loader.load()
             text_splitter = RecursiveCharacterTextSplitter(

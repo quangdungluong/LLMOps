@@ -35,12 +35,12 @@ interface DocumentUploadStepsProps {
 interface FileStatus {
   file: File;
   status:
-    | 'pending'
-    | 'uploading'
-    | 'uploaded'
-    | 'processing'
-    | 'completed'
-    | 'error';
+  | 'pending'
+  | 'uploading'
+  | 'uploaded'
+  | 'processing'
+  | 'completed'
+  | 'error';
   uploadId?: number;
   documentId?: number;
   tempPath?: string;
@@ -126,6 +126,9 @@ export function DocumentUploadSteps({
         ['.docx'],
       'text/plain': ['.txt'],
       'text/markdown': ['.md'],
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
+        ['.xlsx'],
+      'text/html': ['.html'],
     },
   });
 
@@ -368,8 +371,8 @@ export function DocumentUploadSteps({
                   currentStep === step
                     ? 'bg-primary text-primary-foreground border-primary'
                     : currentStep > step
-                    ? 'bg-primary/20 border-primary/20'
-                    : 'bg-background border-input'
+                      ? 'bg-primary/20 border-primary/20'
+                      : 'bg-background border-input'
                 )}
               >
                 <Icon className='w-6 h-6' />
@@ -409,7 +412,7 @@ export function DocumentUploadSteps({
                   Drop your files here or click to browse
                 </p>
                 <p className='text-xs text-muted-foreground'>
-                  Supports PDF, DOCX, TXT, and MD files
+                  Supports PDF, DOCX, TXT, MD, XLSX, and HTML files
                 </p>
               </div>
               {files.length > 0 && (
@@ -424,9 +427,9 @@ export function DocumentUploadSteps({
                           <FileIcon
                             extension={fileStatus.file.name.split('.').pop()}
                             {...defaultStyles[
-                              fileStatus.file.name
-                                .split('.')
-                                .pop() as keyof typeof defaultStyles
+                            fileStatus.file.name
+                              .split('.')
+                              .pop() as keyof typeof defaultStyles
                             ]}
                           />
                         </div>
@@ -619,9 +622,9 @@ export function DocumentUploadSteps({
                               <FileIcon
                                 extension={file.file.name.split('.').pop()}
                                 {...defaultStyles[
-                                  file.file.name
-                                    .split('.')
-                                    .pop() as keyof typeof defaultStyles
+                                file.file.name
+                                  .split('.')
+                                  .pop() as keyof typeof defaultStyles
                                 ]}
                               />
                             </div>

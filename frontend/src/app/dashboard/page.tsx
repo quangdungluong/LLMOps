@@ -151,7 +151,7 @@ export default function DashboardPage() {
               Upload Documents
             </h3>
             <p className="text-sm text-slate-500 dark:text-slate-400 text-center">
-              Add PDF, DOCX, MD or TXT files to your knowledge bases
+              Add PDF, DOCX, MD, TXT, XLSX, or HTML files to your knowledge bases
             </p>
           </a>
 
@@ -210,7 +210,7 @@ export default function DashboardPage() {
                   Upload Your Documents
                 </h3>
                 <p className="text-slate-600 dark:text-slate-300">
-                  Upload PDF, DOCX, MD or TXT files to your knowledge base. Our
+                  Upload PDF, DOCX, MD, TXT, XLSX, or HTML files to your knowledge base. Our
                   system will process and index them for AI-powered retrieval.
                 </p>
                 <a

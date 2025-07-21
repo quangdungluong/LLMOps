@@ -168,6 +168,10 @@ export function DocumentList({ knowledgeBaseId }: DocumentListProps) {
                     <FileIcon extension='txt' {...defaultStyles.txt} />
                   ) : doc.content_type.toLowerCase().includes('md') ? (
                     <FileIcon extension='md' {...defaultStyles.md} />
+                  ) : doc.content_type.toLowerCase().includes('xlsx') ? (
+                    <FileIcon extension='xlsx' {...defaultStyles.xlsx} />
+                  ) : doc.content_type.toLowerCase().includes('html') ? (
+                    <FileIcon extension='html' {...defaultStyles.html} />
                   ) : (
                     <FileIcon
                       extension={doc.file_name.split('.').pop() || ''}
