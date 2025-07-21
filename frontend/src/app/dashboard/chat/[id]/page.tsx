@@ -56,10 +56,11 @@ export default function ChatPage({ params }: { params: { id: string } }) {
   } = useChat({
     api: `/api/chat/${params.id}/messages`,
     headers: {
-      Authorization: `Bearer ${typeof window !== 'undefined'
-        ? window.localStorage.getItem('token')
-        : ''
-        }`,
+      Authorization: `Bearer ${
+        typeof window !== 'undefined'
+          ? window.localStorage.getItem('token')
+          : ''
+      }`,
     },
   });
 
@@ -100,11 +101,11 @@ export default function ChatPage({ params }: { params: { id: string } }) {
 
       const contextData = base64Part
         ? (JSON.parse(atob(base64Part.trim())) as {
-          context: Array<{
-            page_content: string;
-            metadata: Record<string, any>;
-          }>;
-        })
+            context: Array<{
+              page_content: string;
+              metadata: Record<string, any>;
+            }>;
+          })
         : null;
 
       const citations: Citation[] =
@@ -133,7 +134,10 @@ export default function ChatPage({ params }: { params: { id: string } }) {
   const fetchChat = async () => {
     try {
       const data: Chat = await api.get(`/api/chat/${params.id}`);
-      const formattedMessages = data.messages.map(processMessage);
+      const formattedMessages = data.messages.map((message) => ({
+        ...message,
+        id: message.id.toString(),
+      }));
       setMessages(formattedMessages);
     } catch (error) {
       console.error('Failed to fetch chat:', error);
@@ -177,8 +181,9 @@ export default function ChatPage({ params }: { params: { id: string } }) {
           {processedMessages.map((message) => (
             <div
               key={message.id}
-              className={`flex items-start space-x-4 ${message.role === 'user' ? 'justify-end' : ''
-                }`}
+              className={`flex items-start space-x-4 ${
+                message.role === 'user' ? 'justify-end' : ''
+              }`}
             >
               {message.role === 'assistant' && (
                 <Avatar>
@@ -189,10 +194,11 @@ export default function ChatPage({ params }: { params: { id: string } }) {
                 </Avatar>
               )}
               <Card
-                className={`max-w-[80%] ${message.role === 'user'
-                  ? 'bg-primary text-primary-foreground'
-                  : ''
-                  }`}
+                className={`max-w-[80%] ${
+                  message.role === 'user'
+                    ? 'bg-primary text-primary-foreground'
+                    : ''
+                }`}
               >
                 <CardContent className='p-4'>
                   {message.role === 'assistant' ? (
@@ -218,7 +224,7 @@ export default function ChatPage({ params }: { params: { id: string } }) {
           <div className='flex justify-start'>
             {isLoading &&
               processedMessages[processedMessages.length - 1]?.role !=
-              'assistant' && (
+                'assistant' && (
                 <Card>
                   <CardContent className='p-4'>
                     <div className='flex items-center space-x-1'>

@@ -147,7 +147,7 @@ async def generate_response(
             if message["role"] == "user":
                 chat_history.append((HumanMessage(content=message["content"])))
             elif message["role"] == "assistant":
-                message["content"] = message["content"].split("__LLM_REPONSE__")[-1]
+                message["content"] = message["content"].split("__LLM_RESPONSE__")[-1]
                 chat_history.append((AIMessage(content=message["content"])))
 
         response = ""

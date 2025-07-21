@@ -1,7 +1,6 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, Table
-
-from sqlalchemy.orm import relationship
 from app.models.base import Base, TimestampMixin
+from sqlalchemy import Column, ForeignKey, Integer, String, Table, Text
+from sqlalchemy.orm import relationship
 
 chat_knowledge_bases = Table(
     "chat_knowledge_bases",
@@ -34,7 +33,7 @@ class Message(Base, TimestampMixin):
 
     id = Column(Integer, primary_key=True, index=True)
     chat_id = Column(Integer, ForeignKey("chats.id"), nullable=False)
-    content = Column(String, nullable=False)
+    content = Column(Text, nullable=False)
     role = Column(String, nullable=False)
 
     chat = relationship("Chat", back_populates="messages")
