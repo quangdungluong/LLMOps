@@ -1,6 +1,7 @@
 from typing import Any, List, Tuple
 
 from app.core.config import settings
+from app.core.logger import logger
 from langchain_core.documents import Document
 from langchain_core.embeddings import Embeddings
 from langchain_core.retrievers import BaseRetriever
@@ -28,14 +29,17 @@ class MilvusVectorStore(BaseVectorStore):
         self._store.delete(ids)
 
     def delete_by_document_id(self, document_id: int) -> None:
-        results = self._store._milvus_client.query(
-            collection_name=self.collection_name,
-            filter=f"document_id == {document_id}",
-            output_fields=["pk"],
-        )
-        if results:
-            ids_to_delete = [res["pk"] for res in results]
-            self.delete(ids_to_delete)
+        try:
+            results = self._store._milvus_client.query(
+                collection_name=self.collection_name,
+                filter=f"document_id == {document_id}",
+                output_fields=["pk"],
+            )
+            if results:
+                ids_to_delete = [res["pk"] for res in results]
+                self.delete(ids_to_delete)
+        except Exception as e:
+            logger.error(f"Failed to delete document from Milvus: {e}")
 
     def as_retriever(self, **kwargs: Any) -> BaseRetriever:
         return self._store.as_retriever(**kwargs)
