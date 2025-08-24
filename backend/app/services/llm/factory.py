@@ -1,8 +1,9 @@
 from typing import Optional
 
 from app.core.config import settings
+from langchain.chat_models import ChatOpenAI
 from langchain_core.language_models import BaseChatModel
-from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_openai import ChatOpenAI
 
 
 class LLMFactory:
@@ -10,9 +11,10 @@ class LLMFactory:
     def create(provider: Optional[str] = None) -> BaseChatModel:
         provider = provider or settings.CHAT_PROVIDER.lower()
         if provider == "gemini":
-            return ChatGoogleGenerativeAI(
+            return ChatOpenAI(
                 model=settings.GOOGLE_GENAI_MODEL,
-                api_key=settings.GOOGLE_API_KEY,
+                api_key=settings.API_KEY,
+                base_url=settings.MODEL_BASE_URL,
             )
         else:
             raise ValueError(f"Unsupported LLM provider: {provider}")

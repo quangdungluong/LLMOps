@@ -45,7 +45,11 @@ class Settings(BaseSettings):
 
     # Gemini Settings
     GOOGLE_API_KEY: str = os.getenv("GOOGLE_API_KEY", "")
-    GOOGLE_GENAI_MODEL: str = os.getenv("GOOGLE_GENAI_MODEL", "gemini-2.0-flash")
+    GOOGLE_GENAI_MODEL: str = os.getenv("GOOGLE_GENAI_MODEL", "gemini-2.5-flash")
+
+    # LiteLLM Gateway
+    MODEL_BASE_URL: str = os.getenv("MODEL_BASE_URL", "http://litellm:4000")
+    API_KEY: str = os.getenv("API_KEY", "")
 
     @property
     def get_database_url(self) -> str:
