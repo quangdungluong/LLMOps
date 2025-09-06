@@ -1,5 +1,5 @@
 import os
-from typing import List, Optional
+from typing import Optional
 
 from pydantic_settings import BaseSettings
 
@@ -47,9 +47,16 @@ class Settings(BaseSettings):
     GOOGLE_API_KEY: str = os.getenv("GOOGLE_API_KEY", "")
     GOOGLE_GENAI_MODEL: str = os.getenv("GOOGLE_GENAI_MODEL", "gemini-2.5-flash")
 
+    # vLLM Embedding Settings
+    EMBEDDING_MODEL: str = os.getenv("EMBEDDING_MODEL", "multilingual-e5-base")
+
     # LiteLLM Gateway
     MODEL_BASE_URL: str = os.getenv("MODEL_BASE_URL", "http://litellm:4000")
     API_KEY: str = os.getenv("API_KEY", "")
+
+    # Cache Settings
+    REDIS_HOST: str = os.getenv("REDIS_CACHE_HOST", "localhost")
+    REDIS_PORT: int = int(os.getenv("REDIS_CACHE_PORT", "6379"))
 
     @property
     def get_database_url(self) -> str:

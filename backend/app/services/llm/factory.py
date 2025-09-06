@@ -1,7 +1,6 @@
 from typing import Optional
 
 from app.core.config import settings
-from langchain.chat_models import ChatOpenAI
 from langchain_core.language_models import BaseChatModel
 from langchain_openai import ChatOpenAI
 
