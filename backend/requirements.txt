@@ -23,5 +23,5 @@ requests==2.32.4
 SQLAlchemy==2.0.41
 unstructured[all-docs]==0.18.9
 uvicorn==0.25.0
-nemoguardrails==0.15.0
+nemoguardrails==0.16.0
 redis==6.4.0

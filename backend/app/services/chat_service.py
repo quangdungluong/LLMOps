@@ -19,6 +19,7 @@ from langchain_core.prompts import (
     MessagesPlaceholder,
     PromptTemplate,
 )
+from nemoguardrails.integrations.langchain.runnable_rails import RunnableRails
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
@@ -29,6 +30,7 @@ async def generate_response(
     knowledge_base_ids: list[int],
     chat_id: int,
     db: AsyncSession,
+    rails_service: RunnableRails,
 ):
     try:
         # create user message
@@ -140,18 +142,19 @@ async def generate_response(
         rag_chain = create_retrieval_chain(
             history_aware_retriever, question_answer_chain
         )
+        rag_chain_with_rails = rails_service | rag_chain
 
         # Generate response
         chat_history = []
         for message in messages["messages"]:
             if message["role"] == "user":
-                chat_history.append((HumanMessage(content=message["content"])))
+                chat_history.append({"type": "human", "content": message["content"]})
             elif message["role"] == "assistant":
                 message["content"] = message["content"].split("__LLM_RESPONSE__")[-1]
-                chat_history.append((AIMessage(content=message["content"])))
+                chat_history.append({"type": "ai", "content": message["content"]})
 
         response = ""
-        async for chunk in rag_chain.astream(
+        async for chunk in rag_chain_with_rails.astream(
             {"input": query, "chat_history": chat_history},
             config={
                 "callbacks": [langfuse_handler],

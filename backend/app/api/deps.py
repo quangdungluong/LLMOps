@@ -4,7 +4,7 @@ from app.core.security import oauth2_scheme
 from app.crud.user import get_user_by_username
 from app.db.session import get_db
 from app.models.user import User
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, Request, status
 from jwt.exceptions import InvalidTokenError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -37,3 +37,7 @@ async def get_current_user(
             headers={"WWW-Authenticate": "Bearer"},
         )
     return user
+
+
+def get_llm_rails(request: Request):
+    return request.app.state.llm_rails

@@ -1,4 +1,4 @@
-from app.api.deps import get_current_user
+from app.api.deps import get_current_user, get_llm_rails
 from app.crud.chat import create_chat, delete_chat, get_chat_by_id, get_chats_by_user_id
 from app.crud.knowledge import get_knowledge_base_by_ids_and_user_id
 from app.db.session import get_db
@@ -7,6 +7,7 @@ from app.schemas.chat import ChatCreate, ChatResponse
 from app.services.chat_service import generate_response
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
+from nemoguardrails.integrations.langchain.runnable_rails import RunnableRails
 from sqlalchemy.ext.asyncio import AsyncSession
 
 router = APIRouter(prefix="/chat", tags=["chat"])
@@ -74,6 +75,7 @@ async def create_message(
     messages: dict,
     db: AsyncSession = Depends(get_db),
     user: User = Depends(get_current_user),
+    rails_service: RunnableRails = Depends(get_llm_rails),
 ):
     chat = await get_chat_by_id(db, chat_id, user.id)
     if not chat:
@@ -95,6 +97,7 @@ async def create_message(
             knowledge_base_ids=knowledge_base_ids,
             chat_id=chat_id,
             db=db,
+            rails_service=rails_service,
         ):
             yield chunk
 

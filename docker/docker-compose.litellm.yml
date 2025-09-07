@@ -5,8 +5,7 @@ services:
     container_name: litellm
     volumes:
     - ../litellm/config.yaml:/app/config.yaml
-    command:
-    - "--config=/app/config.yaml"
+    command: ["--config", "/app/config.yaml", "--debug"]
     ports:
       - "4000:4000"
     environment:
