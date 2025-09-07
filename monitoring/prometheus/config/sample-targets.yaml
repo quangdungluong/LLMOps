@@ -1,0 +1,21 @@
+- labels:
+    host_gpu: sample-app-server-1
+    hostname: sample-app-server-1
+    job: cadvisor
+    node_type: gpu
+  targets:
+  - 192.168.1.108:9003
+- labels:
+    host_gpu: sample-app-server-1
+    hostname: sample-app-server-1
+    job: node-exporter
+    node_type: gpu
+  targets:
+  - 192.168.1.108:9002
+- labels:
+    host_gpu: sample-app-server-1
+    hostname: sample-app-server-1
+    job: dcgm-exporter
+    node_type: gpu
+  targets:
+  - 192.168.1.108:9001
