@@ -58,6 +58,11 @@ class Settings(BaseSettings):
     REDIS_HOST: str = os.getenv("REDIS_CACHE_HOST", "localhost")
     REDIS_PORT: int = int(os.getenv("REDIS_CACHE_PORT", "6379"))
 
+    # Langfuse Settings
+    LANGFUSE_HOST: str = os.getenv("LANGFUSE_HOST", "")
+    LANGFUSE_PUBLIC_KEY: str = os.getenv("LANGFUSE_PUBLIC_KEY", "")
+    LANGFUSE_SECRET_KEY: str = os.getenv("LANGFUSE_SECRET_KEY", "")
+
     @property
     def get_database_url(self) -> str:
         if self.SQLALCHEMY_DATABASE_URI:

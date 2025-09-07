@@ -6,6 +6,7 @@ from app.core.logger import logger
 from app.crud.document import get_documents_by_knowledge_base_id
 from app.crud.knowledge import get_knowledge_base_by_ids
 from app.models.chat import Message
+from app.prompts.manager import prompt_manager
 from app.services.embeddings.embedding_factory import EmbeddingFactory
 from app.services.langfuse_tracing import langfuse_handler
 from app.services.llm.factory import LLMFactory
@@ -86,12 +87,8 @@ async def generate_response(
         llm = LLMFactory.create()
 
         # Create contextualize question prompt
-        contextualize_q_system_prompt = (
-            "Given a chat history and the latest user question "
-            "which might reference context in the chat history, "
-            "formulate a standalone question which can be understood "
-            "without the chat history. Do NOT answer the question, just "
-            "reformulate it if needed and otherwise return it as is."
+        contextualize_q_system_prompt = prompt_manager.get_prompt(
+            "contextualize_q_system"
         )
         contextualize_q_prompt = ChatPromptTemplate.from_messages(
             [
@@ -107,20 +104,7 @@ async def generate_response(
         )
 
         # Create QA prompt
-        qa_system_prompt = (
-            "You are given a user question, and please write clean, concise and accurate answer to the question. "
-            "You will be given a set of related contexts to the question, which are numbered sequentially starting from 1. "
-            "Each context has an implicit reference number based on its position in the array (first context is 1, second is 2, etc.). "
-            "Please use these contexts and cite them using the format [citation:x] at the end of each sentence where applicable. "
-            "Your answer must be correct, accurate and written by an expert using an unbiased and professional tone. "
-            "Please limit to 1024 tokens. Do not give any information that is not related to the question, and do not repeat. "
-            "Say 'information is missing on' followed by the related topic, if the given context do not provide sufficient information. "
-            "If a sentence draws from multiple contexts, please list all applicable citations, like [citation:1][citation:2]. "
-            "Other than code and specific names and citations, your answer must be written in the same language as the question. "
-            "Be concise.\n\nContext: {context}\n\n"
-            "Remember: Cite contexts by their position number (1 for first context, 2 for second, etc.) and don't blindly "
-            "repeat the contexts verbatim."
-        )
+        qa_system_prompt = prompt_manager.get_prompt("qa_system")
         qa_prompt = ChatPromptTemplate.from_messages(
             [
                 ("system", qa_system_prompt),
@@ -130,7 +114,9 @@ async def generate_response(
         )
 
         # Create Document stuff chain
-        document_prompt = PromptTemplate.from_template("\n\n- {page_content}\n\n")
+        document_prompt = PromptTemplate.from_template(
+            prompt_manager.get_prompt("document_prompt")
+        )
         question_answer_chain = create_stuff_documents_chain(
             llm,
             qa_prompt,
