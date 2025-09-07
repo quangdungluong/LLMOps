@@ -1,5 +1,6 @@
 import base64
 import json
+import traceback
 
 from app.core.config import settings
 from app.core.logger import logger
@@ -162,13 +163,14 @@ async def generate_response(
                 yield f'0:"{base64_context}{separator}"\n'
                 response += base64_context + separator
 
-            if "answer" in chunk:
+            if "answer" in chunk and chunk["answer"] is not None:
                 response += chunk["answer"]
                 escape_chunk = chunk["answer"].replace('"', '\\"').replace("\n", "\\n")
                 yield f'0:"{escape_chunk}"\n'
         bot_message.content = response
         await db.commit()
     except Exception as e:
+        traceback.print_exc()
         error_message = f"Error generating response: {str(e)}"
         logger.error(error_message)
         yield f"3:{error_message}\n"
