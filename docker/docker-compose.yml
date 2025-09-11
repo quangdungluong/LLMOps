@@ -137,6 +137,18 @@ services:
     networks:
       - llmops-network
 
+  attu:
+    container_name: milvus-attu
+    image: zilliz/attu:latest
+    environment:
+      MILVUS_URL: milvus-standalone:19530
+    ports:
+      - "3003:3000"
+    depends_on:
+      - standalone
+    networks:
+      - llmops-network
+
   langfuse-worker:
     image: docker.io/langfuse/langfuse-worker:3
     container_name: langfuse-worker
