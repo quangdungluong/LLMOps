@@ -1,0 +1,14 @@
+arxiv
+docx2txt
+langchain
+langchain_community
+langchain_core
+langchain_milvus
+langchain_ollama
+langchain_text_splitters
+psycopg2-binary
+pypdf
+requests
+unstructured[all-docs]
+minio
+boto3
