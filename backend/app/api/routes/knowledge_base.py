@@ -1,16 +1,13 @@
 import asyncio
-import hashlib
 from typing import List
 
 from app.api.deps import get_current_user
-from app.crud.document import (
-    delete_document,
-    get_upload_by_ids,
-    upload_documents,
-)
+from app.crud.document import delete_document, get_upload_by_ids, upload_documents
 from app.crud.knowledge import (
+    create_document,
     create_knowledge_base,
     get_document_by_id,
+    get_documents_by_knowledge_base_id,
     get_knowledge_base_by_id,
     get_knowledge_base_by_user_id,
     preview_documents,
@@ -20,12 +17,15 @@ from app.db.session import get_db
 from app.models.task import ProcessingTask
 from app.models.user import User
 from app.schemas.knowledge import (
+    DocumentBase,
     KnowledgeBaseCreate,
     KnowledgeBaseResponse,
     PreviewRequest,
 )
+from app.schemas.retrieval import TestRetrievalRequest
 from app.schemas.task import TaskStatus, TaskStatusResponse
 from app.services.document_processor import process_document_background
+from app.services.retrieval import retrieve_documents
 from fastapi import (
     APIRouter,
     BackgroundTasks,
@@ -36,8 +36,6 @@ from fastapi import (
     UploadFile,
 )
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.schemas.retrieval import TestRetrievalRequest
-from app.services.retrieval import retrieve_documents
 
 router = APIRouter(prefix="/knowledge-base", tags=["knowledge-base"])
 
@@ -110,6 +108,32 @@ async def delete_document_route(
         raise HTTPException(status_code=404, detail="Document not found")
     await delete_document(db, document)
     return {"status": "success"}
+
+
+@router.post("/{knowledge_base_id}/documents/create")
+async def create_document_route(
+    knowledge_base_id: int,
+    document: DocumentBase,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    kb = await get_knowledge_base_by_id(db, knowledge_base_id, current_user.id)
+    if not kb:
+        raise HTTPException(status_code=404, detail="Knowledge base not found")
+    await create_document(db, document, knowledge_base_id)
+    return {"status": "success"}
+
+
+@router.get("/{knowledge_base_id}/documents")
+async def list_documents_route(
+    knowledge_base_id: int,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    documents = await get_documents_by_knowledge_base_id(
+        db, knowledge_base_id, current_user.id
+    )
+    return {"documents": documents}
 
 
 @router.post("/{knowledge_base_id}/documents/upload")

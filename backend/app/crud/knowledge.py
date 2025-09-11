@@ -2,7 +2,7 @@ from typing import Dict, List, Optional, Sequence
 
 from app.models.document import Document, DocumentUpload
 from app.models.knowledge import KnowledgeBase
-from app.schemas.knowledge import KnowledgeBaseCreate, PreviewResponse
+from app.schemas.knowledge import DocumentBase, KnowledgeBaseCreate, PreviewResponse
 from app.services.document_processor import preview_document
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
@@ -153,3 +153,34 @@ async def preview_documents(
         preview = await preview_document(str(file_path), chunk_size, chunk_overlap)
         results[doc_id] = preview
     return results
+
+
+async def create_document(
+    db: AsyncSession, document: DocumentBase, knowledge_base_id: int
+) -> Document:
+    document = Document(
+        file_name=document.file_name,
+        file_path=document.file_path,
+        file_size=document.file_size,
+        file_hash=document.file_hash,
+        content_type=document.content_type,
+        knowledge_base_id=knowledge_base_id,
+    )
+    db.add(document)
+    await db.commit()
+    await db.refresh(document)
+    return document
+
+
+async def get_documents_by_knowledge_base_id(
+    db: AsyncSession, knowledge_base_id: int, user_id: int
+) -> Sequence[Document]:
+    result = await db.execute(
+        select(Document)
+        .join(KnowledgeBase)
+        .filter(
+            Document.knowledge_base_id == knowledge_base_id,
+            KnowledgeBase.user_id == user_id,
+        )
+    )
+    return result.scalars().all()
