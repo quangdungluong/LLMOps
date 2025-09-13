@@ -26,14 +26,14 @@ x-airflow-common:
     # If you want to use it, outcomment it and replace airflow.cfg with the name of your config file
     # AIRFLOW_CONFIG: '/opt/airflow/config/airflow.cfg'
     INLINE_DATA_VOLUME: /opt/data
-    MINIO_ACCESS_KEY: minioadmin
-    MINIO_SECRET_KEY: minioadmin
-    MINIO_BUCKET: llmops
-    MINIO_ENDPOINT: minio:9000
+    MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY:-}
+    MINIO_SECRET_KEY: ${MINIO_SECRET_KEY:-}
+    MINIO_BUCKET: ${MINIO_BUCKET:-}
+    MINIO_ENDPOINT: ${MINIO_ENDPOINT:-}
     BASE_URL: "http://llmops-backend:8000"
     API_PREFIX: "/api/v1"
-    USERNAME: admin
-    PASSWORD: Password123
+    USERNAME: ${USERNAME:-admin}
+    PASSWORD: ${PASSWORD:-Password123}
     
   volumes:
     - ${AIRFLOW_PROJ_DIR:-.}/dags:/opt/airflow/dags

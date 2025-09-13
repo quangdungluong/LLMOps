@@ -32,22 +32,19 @@ model_list:
       api_key: os.environ/GOOGLE_API_KEY
       tags: ["free", "default"]
       weight: 1
-  # - model_name: vllm-models
-  #   litellm_params:
-  #     model: openai/facebook/opt-125m # the `openai/` prefix tells litellm it's openai compatible
-  #     api_base: http://0.0.0.0:4000/v1
-  #     api_key: none
-  #     rpm: 1440
-  #   model_info:
-  #     version: 2
+  - model_name: Qwen/Qwen3-0.6B
+    litellm_params:
+      model: openai/Qwen/Qwen3-0.6B # the `openai/` prefix tells litellm it's openai compatible
+      api_base: http://llm:8000/v1
+      api_key: none
 
 router_settings:
   # Default model to use if no other model is specified
   fallbacks:
-    - 'gemini-2.5-pro': ['gemini-2.5-flash']
-    - 'gemini-2.5-flash': ['gemini-2.5-flash-lite']
-    - 'gemini-2.5-flash-lite': ['gemini-2.0-flash']
-    - 'gemini-2.0-flash': ['gemini-2.0-flash-lite'] 
+    - 'gemini-2.5-pro': ['gemini-2.5-flash', 'Qwen/Qwen3-0.6B']
+    - 'gemini-2.5-flash': ['gemini-2.5-flash-lite', 'Qwen/Qwen3-0.6B']
+    - 'gemini-2.5-flash-lite': ['gemini-2.0-flash', 'Qwen/Qwen3-0.6B']
+    - 'gemini-2.0-flash': ['gemini-2.0-flash-lite', 'Qwen/Qwen3-0.6B'] 
 
   # Enable or disable model tagging
   enable_tag_filtering: True
