@@ -3,7 +3,7 @@ FROM python:3.11-slim
 WORKDIR /app
 
 RUN apt-get update && \
-    apt-get install --no-install-recommends -y g++ gcc && \
+    apt-get install --no-install-recommends -y g++ gcc postgresql-client && \
     rm -rf /var/lib/apt/lists/*
 
 RUN pip install uv
