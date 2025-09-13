@@ -1,0 +1,87 @@
+model_list:
+  - model_name: gemini-2.5-pro
+    litellm_params:
+      model: gemini/gemini-2.5-pro
+      api_key: os.environ/GOOGLE_API_KEY
+      rpm: 5 # [OPTIONAL] Rate limit for this deployment: in requests per minute (rpm)
+      tags: ['paid']
+      max_budget: 0.1 # (USD)
+      budget_duration: 1d # (Duration. can be 1s, 1m, 1h, 1d, 1mo)
+      weight: 1
+  - model_name: gemini-2.5-flash
+    litellm_params:
+      model: gemini/gemini-2.5-flash
+      api_key: os.environ/GOOGLE_API_KEY
+      tags: ["free", "default"]
+      weight: 1
+  - model_name: gemini-2.5-flash-lite
+    litellm_params:
+      model: gemini/gemini-2.5-flash-lite
+      api_key: os.environ/GOOGLE_API_KEY
+      tags: ["free", "default"]
+      weight: 1
+  - model_name: gemini-2.0-flash
+    litellm_params:
+      model: gemini/gemini-2.0-flash
+      api_key: os.environ/GOOGLE_API_KEY
+      tags: ["free", "default"]
+      weight: 1
+  - model_name: gemini-2.0-flash-lite
+    litellm_params:
+      model: gemini/gemini-2.0-flash-lite
+      api_key: os.environ/GOOGLE_API_KEY
+      tags: ["free", "default"]
+      weight: 1
+  - model_name: Qwen/Qwen3-0.6B
+    litellm_params:
+      model: openai/Qwen/Qwen3-0.6B # the `openai/` prefix tells litellm it's openai compatible
+      api_base: http://llm:8000/v1
+      api_key: none
+
+router_settings:
+  # Default model to use if no other model is specified
+  fallbacks:
+    - 'gemini-2.5-pro': ['gemini-2.5-flash', 'Qwen/Qwen3-0.6B']
+    - 'gemini-2.5-flash': ['gemini-2.5-flash-lite', 'Qwen/Qwen3-0.6B']
+    - 'gemini-2.5-flash-lite': ['gemini-2.0-flash', 'Qwen/Qwen3-0.6B']
+    - 'gemini-2.0-flash': ['gemini-2.0-flash-lite', 'Qwen/Qwen3-0.6B'] 
+
+  # Enable or disable model tagging
+  enable_tag_filtering: True
+
+  # Budget settings for the routing layer
+  provider_budget_config:
+    google:
+      budget_limit: 1 # (USD)
+      time_period: 1d # (Duration. can be 1s, 1m, 1h, 1d, 1mo)
+
+  # Redis settings for caching and rate limiting
+  redis_host: os.environ/REDIS_HOST
+  redis_port: os.environ/REDIS_PORT
+
+  # Cooldowns settings
+  allowed_fails: 3
+  cooldown_time: 30
+
+  # Retry policies for specific errors
+  retry_policy: {
+    "BadRequestErrorRetries": 3,
+    "ContentPolicyViolationErrorRetries": 4
+  }
+  allowed_fails_policy: {
+    "ContentPolicyViolationErrorAllowedFails": 1000, # Allow 1000 ContentPolicyViolationError before cooling down a deployment
+    "RateLimitErrorAllowedFails": 100 # Allow 100 RateLimitErrors before cooling down a deployment
+  }
+
+litellm_settings: # module level litellm settings - https://github.com/BerriAI/litellm/blob/main/litellm/__init__.py
+  drop_params: True
+  cache: true 
+  cache_params:
+    type: redis
+  success_callback: ["langfuse"]
+  timeout: 30
+
+general_settings:
+  master_key: os.environ/API_KEY
+  store_model_in_db: true
+  store_prompts_in_spend_logs: true

@@ -1,0 +1,14 @@
+models:
+- type: main
+  engine: openai
+  model: gemini-2.0-flash
+  parameters: {temperature: 0.01, base_url: "http://litellm:4000"}
+
+rails:
+  input:
+    flows:
+      - self check input
+
+  output:
+    flows:
+      - self check output

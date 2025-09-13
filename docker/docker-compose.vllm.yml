@@ -1,0 +1,16 @@
+name: llmops
+services:
+  llm:
+    image: kebe/vllm-openai:v0.10.0-macos
+    container_name: llm
+    volumes:
+      - ~/.cache/huggingface:/root/.cache/huggingface
+    restart: always
+    command: ["--model", "Qwen/Qwen3-0.6B", "--trust-remote-code", "--dtype", "auto", "--max-model-len", "2048", "--runner", "generate"]
+    networks:
+      - llmops-network
+
+networks:
+  llmops-network:
+    name: llmops-network
+    driver: bridge
